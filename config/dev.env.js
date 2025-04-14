@@ -4,5 +4,5 @@ const prodEnv = require('./prod.env')
 
 module.exports = merge(prodEnv, {
   NODE_ENV: '"development"',
-  BASE_API: '"http://108.136.42.11:3006"'
+  BASE_API: '"https://movieai.me/api"'
 })
