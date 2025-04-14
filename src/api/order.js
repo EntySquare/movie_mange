@@ -1,63 +1,38 @@
 import request from '@/utils/request'
-export function fetchList(params) {
+
+// shop/showAllPurchases-获取所有交易订单接口
+// /admin/shop / showAllPurchases
+export function fetchList(data) {
   return request({
-    url:'/order/list',
-    method:'get',
-    params:params
+    url: '/admin/shop/showAllPurchases',
+    method: 'post',
+    data: data
+  })
+}
+import store from '../store'
+
+// /shop/modifyPurchaseStatus--修改交易订单状态
+// /admin/shop/modifyPurchaseStatus
+export function modifyPurchaseStatus(data) {
+  return request({
+    url: '/admin/shop/modifyPurchaseStatus',
+    method: 'post',
+    data: data,
+    headers: {
+      authority: store.getters.authority // 替换成实际的 authority 值
+    }
   })
 }
 
-export function closeOrder(params) {
-  return request({
-    url:'/order/update/close',
-    method:'post',
-    params:params
-  })
-}
+// " /shop/deliverpurchase  //订单发货
 
-export function deleteOrder(params) {
+export function deliverpurchase(data) {
   return request({
-    url:'/order/delete',
-    method:'post',
-    params:params
-  })
-}
-
-export function deliveryOrder(data) {
-  return request({
-    url:'/order/update/delivery',
-    method:'post',
-    data:data
-  });
-}
-
-export function getOrderDetail(id) {
-  return request({
-    url:'/order/'+id,
-    method:'get'
-  });
-}
-
-export function updateReceiverInfo(data) {
-  return request({
-    url:'/order/update/receiverInfo',
-    method:'post',
-    data:data
-  });
-}
-
-export function updateMoneyInfo(data) {
-  return request({
-    url:'/order/update/moneyInfo',
-    method:'post',
-    data:data
-  });
-}
-
-export function updateOrderNote(params) {
-  return request({
-    url:'/order/update/note',
-    method:'post',
-    params:params
+    url: '/admin/shop/deliverpurchase',
+    method: 'post',
+    data: data,
+    headers: {
+      authority: store.getters.authority // 替换成实际的 authority 值
+    }
   })
 }

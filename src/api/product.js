@@ -1,72 +1,73 @@
 import request from '@/utils/request'
-export function fetchList(params) {
+// /shop/getGoodsList-管理员获取商品列表
+export function fetchList(data) {
   return request({
-    url:'/product/list',
-    method:'get',
-    params:params
+    url: '/admin/shop/getGoodsList',
+    method: 'post',
+    data: data,
+  })
+}
+import store from '../store'
+const authority = store.getters.authority // 从store中获取authority
+
+// /shop/insertNewGoods-添加最新商品
+
+export function insertNewGoods(data) {
+  return request({
+    url: '/admin/shop/insertNewGoods',
+    method: 'post',
+    data: data,
+    headers: {
+      authority: authority // 替换成实际的 authority 值
+    }
   })
 }
 
-export function fetchSimpleList(params) {
+// /shop/disableGoods-下架商品
+export function disableGoods(data) {
   return request({
-    url:'/product/simpleList',
-    method:'get',
-    params:params
+    url: '/admin/shop/disableGoods',
+    method: 'post',
+    data: data,
+    headers: {
+      authority: authority // 替换成实际的 authority 值
+    }
+  })
+}
+// /shop/ableGoods-上架商品
+
+export function ableGoods(data) {
+  return request({
+    url: '/admin/shop/ableGoods',
+    method: 'post',
+    data: data,
+    headers: {
+      authority: authority // 替换成实际的 authority 值
+    }
   })
 }
 
-export function updateDeleteStatus(params) {
+// /shop/modifyGoodsPrice-修改商品单价
+export function modifyGoodsPrice(data) {
   return request({
-    url:'/product/update/deleteStatus',
-    method:'post',
-    params:params
+    url: '/admin/shop/modifyGoodsPrice',
+    method: 'post',
+    data: data,
+    headers: {
+      authority: authority // 替换成实际的 authority 值
+    }
   })
 }
 
-export function updateNewStatus(params) {
+// /shop/modifyGoodsAmount // 修改商品数量
+
+export function modifyGoodsAmount(data) {
   return request({
-    url:'/product/update/newStatus',
-    method:'post',
-    params:params
+    url: '/admin/shop/modifyGoodsAmount',
+    method: 'post',
+    data: data,
+    headers: {
+      authority: authority // 替换成实际的 authority 值
+    }
   })
 }
-
-export function updateRecommendStatus(params) {
-  return request({
-    url:'/product/update/recommendStatus',
-    method:'post',
-    params:params
-  })
-}
-
-export function updatePublishStatus(params) {
-  return request({
-    url:'/product/update/publishStatus',
-    method:'post',
-    params:params
-  })
-}
-
-export function createProduct(data) {
-  return request({
-    url:'/product/create',
-    method:'post',
-    data:data
-  })
-}
-
-export function updateProduct(id,data) {
-  return request({
-    url:'/product/update/'+id,
-    method:'post',
-    data:data
-  })
-}
-
-export function getProduct(id) {
-  return request({
-    url:'/product/updateInfo/'+id,
-    method:'get',
-  })
-}
-

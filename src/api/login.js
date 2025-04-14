@@ -1,20 +1,14 @@
 import request from '@/utils/request'
 
-export function login(username, password) {
+//登录
+export function login(loginName, password) {
   return request({
     url: '/admin/login',
     method: 'post',
     data: {
-      username,
+      loginName,
       password
     }
-  })
-}
-
-export function getInfo() {
-  return request({
-    url: '/admin/info',
-    method: 'get',
   })
 }
 
@@ -25,56 +19,40 @@ export function logout() {
   })
 }
 
-export function fetchList(params) {
-  return request({
-    url: '/admin/list',
-    method: 'get',
-    params: params
-  })
-}
 
-export function createAdmin(data) {
+// /user/showAllUsers-显示所有用户列表
+export function fetchList(data) {
   return request({
-    url: '/admin/register',
+    url: '/admin/user/showAllUsers',
     method: 'post',
     data: data
   })
 }
 
-export function updateAdmin(id, data) {
+// /user/disableUsers-禁用用户
+// /admin/user/disableUsers
+import store from '../store'
+
+export function disableUsers(data) {
   return request({
-    url: '/admin/update/' + id,
+    url: '/admin/user/disableUsers',
     method: 'post',
-    data: data
+    data: data,
+    headers: {
+      authority: store.getters.authority // 替换成实际的 authority 值
+    }
   })
 }
 
-export function updateStatus(id, params) {
+// /user/ableUsers-启用用户
+// /admin/user/ableUsers
+export function ableUsers(data) {
   return request({
-    url: '/admin/updateStatus/' + id,
+    url: '/admin/user/ableUsers',
     method: 'post',
-    params: params
-  })
-}
-
-export function deleteAdmin(id) {
-  return request({
-    url: '/admin/delete/' + id,
-    method: 'post'
-  })
-}
-
-export function getRoleByAdmin(id) {
-  return request({
-    url: '/admin/role/' + id,
-    method: 'get'
-  })
-}
-
-export function allocRole(data) {
-  return request({
-    url: '/admin/role/update',
-    method: 'post',
-    data: data
+    data: data,
+    headers: {
+      authority: store.getters.authority // 替换成实际的 authority 值
+    }
   })
 }

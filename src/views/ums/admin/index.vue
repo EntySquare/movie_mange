@@ -1,27 +1,34 @@
-<template> 
+<template>
+   
   <div class="app-container">
     <el-card class="filter-container" shadow="never">
       <div>
         <i class="el-icon-search"></i>
         <span>筛选搜索</span>
         <el-button
-          style="float:right"
+          style="float: right"
           type="primary"
           @click="handleSearchList()"
-          size="small">
+          size="small"
+        >
           查询搜索
         </el-button>
         <el-button
-          style="float:right;margin-right: 15px"
+          style="float: right; margin-right: 15px"
           @click="handleResetSearch()"
-          size="small">
+          size="small"
+        >
           重置
         </el-button>
       </div>
       <div style="margin-top: 15px">
-        <el-form :inline="true" :model="listQuery" size="small" label-width="140px">
-          <el-form-item label="输入搜索：">
-            <el-input v-model="listQuery.keyword" class="input-width" placeholder="帐号/姓名" clearable></el-input>
+        <el-form :inline="true" :model="form" size="small" label-width="140px">
+          <el-form-item label="用户名：">
+            <el-input
+              v-model.trim="form.userName"
+              class="input-width"
+              placeholder="用户名"
+            ></el-input>
           </el-form-item>
         </el-form>
       </div>
@@ -29,315 +36,226 @@
     <el-card class="operate-container" shadow="never">
       <i class="el-icon-tickets"></i>
       <span>数据列表</span>
-      <el-button size="mini" class="btn-add" @click="handleAdd()" style="margin-left: 20px">添加</el-button>
+      <!-- <el-button size="mini" class="btn-add" @click="handleAdd()" style="margin-left: 20px">添加</el-button> -->
     </el-card>
     <div class="table-container">
-      <el-table ref="adminTable"
-                :data="list"
-                style="width: 100%;"
-                v-loading="listLoading" border>
-        <el-table-column label="编号" width="100" align="center">
-          <template slot-scope="scope">{{scope.row.id}}</template>
+      <el-table
+        ref="adminTable"
+        :data="list"
+        style="width: 100%"
+        v-loading="listLoading"
+        border
+      >
+        <!-- account : "0xc6dde1c85adcb2982cf4e79f835d32a3b66df08b" address :
+        "0xc6dde1c85adcb2982cf4e79f835d32a3b66df08b" buyerAddr : "" flag : "1"
+        identity : 1 userId : 7 userName :
+        "0xc6dde1c85adcb2982cf4e79f835d32a3b66df08b" -->
+
+        <el-table-column label="用户名" align="center">
+          <template slot-scope="scope">{{ scope.row.userName }}</template>
         </el-table-column>
         <el-table-column label="帐号" align="center">
-          <template slot-scope="scope">{{scope.row.username}}</template>
+          <template slot-scope="scope">{{ scope.row.account }}</template>
         </el-table-column>
-        <el-table-column label="姓名" align="center">
-          <template slot-scope="scope">{{scope.row.nickName}}</template>
+        <el-table-column label="地址" align="center">
+          <template slot-scope="scope">{{ scope.row.address }}</template>
         </el-table-column>
-        <el-table-column label="邮箱" align="center">
-          <template slot-scope="scope">{{scope.row.email}}</template>
-        </el-table-column>
-        <el-table-column label="添加时间" width="160" align="center">
-          <template slot-scope="scope">{{scope.row.createTime | formatDateTime}}</template>
-        </el-table-column>
-        <el-table-column label="最后登录" width="160" align="center">
-          <template slot-scope="scope">{{scope.row.loginTime | formatDateTime}}</template>
-        </el-table-column>
-        <el-table-column label="是否启用" width="140" align="center">
+
+        <el-table-column label="收货地址" align="center">
           <template slot-scope="scope">
-            <el-switch
-              @change="handleStatusChange(scope.$index, scope.row)"
-              :active-value="1"
-              :inactive-value="0"
-              v-model="scope.row.status">
-            </el-switch>
+            <div v-if="scope.row.buyerAddr">
+              <div v-if="isJson(scope.row.buyerAddr)">
+                <div
+                  v-for="(value, key) in parseJson(scope.row.buyerAddr)"
+                  :key="key"
+                >
+                  <strong>{{ formatKey(key) }}:</strong> {{ value }}
+                </div>
+              </div>
+              <div v-else>
+                {{ scope.row.buyerAddr }}
+              </div>
+            </div>
+            <div v-else>无收货地址</div>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="180" align="center">
+
+        <el-table-column label="是否启用" width="140" align="center">
+          <!-- flag 0 禁用 1 启用 -->
           <template slot-scope="scope">
-            <el-button size="mini"
-                       type="text"
-                       @click="handleSelectRole(scope.$index, scope.row)">分配角色
-            </el-button>
-            <el-button size="mini"
-                       type="text"
-                       @click="handleUpdate(scope.$index, scope.row)">
-              编辑
-            </el-button>
-            <el-button size="mini"
-                       type="text"
-                       @click="handleDelete(scope.$index, scope.row)">删除
-            </el-button>
+            <!-- 禁用 -->
+            <el-switch
+              :disabled="authority !== 'all'"
+              @change="handleStatusChange(scope.$index, scope.row)"
+              :active-value="'1'"
+              :inactive-value="'0'"
+              v-model="scope.row.flag"
+            >
+            </el-switch>
           </template>
         </el-table-column>
       </el-table>
     </div>
-    <div class="pagination-container">
+    <div class="pagination-container" v-if="total">
       <el-pagination
+        v-if="paginationVisible"
         background
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
         layout="total, sizes,prev, pager, next,jumper"
-        :current-page.sync="listQuery.pageNum"
-        :page-size="listQuery.pageSize"
-        :page-sizes="[10,15,20]"
-        :total="total">
+        :current-page.sync="form.pageNum"
+        :page-size="form.pageSize"
+        :page-sizes="[5, 10, 15]"
+        :total="total"
+      >
       </el-pagination>
     </div>
-    <el-dialog
-      :title="isEdit?'编辑用户':'添加用户'"
-      :visible.sync="dialogVisible"
-      width="40%">
-      <el-form :model="admin"
-               ref="adminForm"
-               label-width="150px" size="small">
-        <el-form-item label="帐号：">
-          <el-input v-model="admin.username" style="width: 250px"></el-input>
-        </el-form-item>
-        <el-form-item label="姓名：">
-          <el-input v-model="admin.nickName" style="width: 250px"></el-input>
-        </el-form-item>
-        <el-form-item label="邮箱：">
-          <el-input v-model="admin.email" style="width: 250px"></el-input>
-        </el-form-item>
-        <el-form-item label="密码：">
-          <el-input v-model="admin.password"  type="password" style="width: 250px"></el-input>
-        </el-form-item>
-        <el-form-item label="备注：">
-          <el-input v-model="admin.note"
-                    type="textarea"
-                    :rows="5"
-                    style="width: 250px"></el-input>
-        </el-form-item>
-        <el-form-item label="是否启用：">
-          <el-radio-group v-model="admin.status">
-            <el-radio :label="1">是</el-radio>
-            <el-radio :label="0">否</el-radio>
-          </el-radio-group>
-        </el-form-item>
-      </el-form>
-      <span slot="footer" class="dialog-footer">
-        <el-button @click="dialogVisible = false" size="small">取 消</el-button>
-        <el-button type="primary" @click="handleDialogConfirm()" size="small">确 定</el-button>
-      </span>
-    </el-dialog>
-    <el-dialog
-      title="分配角色"
-      :visible.sync="allocDialogVisible"
-      width="30%">
-      <el-select v-model="allocRoleIds" multiple placeholder="请选择" size="small" style="width: 80%">
-        <el-option
-          v-for="item in allRoleList"
-          :key="item.id"
-          :label="item.name"
-          :value="item.id">
-        </el-option>
-      </el-select>
-      <span slot="footer" class="dialog-footer">
-        <el-button @click="allocDialogVisible = false" size="small">取 消</el-button>
-        <el-button type="primary" @click="handleAllocDialogConfirm()" size="small">确 定</el-button>
-      </span>
-    </el-dialog>
   </div>
 </template>
 <script>
-  import {fetchList,createAdmin,updateAdmin,updateStatus,deleteAdmin,getRoleByAdmin,allocRole} from '@/api/login';
-  import {fetchAllRoleList} from '@/api/role';
-  import {formatDate} from '@/utils/date';
+import { fetchList, disableUsers, ableUsers } from "@/api/login";
+import store from "@/store";
 
-  const defaultListQuery = {
-    pageNum: 1,
-    pageSize: 10,
-    keyword: null
-  };
-  const defaultAdmin = {
-    id: null,
-    username: null,
-    password: null,
-    nickName: null,
-    email: null,
-    note: null,
-    status: 1
-  };
-  export default {
-    name: 'adminList',
-    data() {
-      return {
-        listQuery: Object.assign({}, defaultListQuery),
-        list: null,
-        total: null,
-        listLoading: false,
-        dialogVisible: false,
-        admin: Object.assign({}, defaultAdmin),
-        isEdit: false,
-        allocDialogVisible: false,
-        allocRoleIds:[],
-        allRoleList:[],
-        allocAdminId:null
-      }
+export default {
+  name: "adminList",
+  data() {
+    return {
+      list: null,
+      total: null,
+      listLoading: false,
+      authority: store.getters.authority, // 从store中获取authority
+
+      paginationVisible: true,
+      form: {
+        userName: "",
+        pageNum: 1, // 页码
+        pageSize: 10, // 每页条数
+      },
+    };
+  },
+  created() {
+    this.getList();
+  },
+
+  methods: {
+    getList() {
+      this.listLoading = true;
+      fetchList(this.form)
+        .then((response) => {
+          console.log("response", response);
+
+          this.list = response.json.usersList;
+          this.total = response.json.count;
+          this.listLoading = false;
+        })
+        .catch(() => {
+          this.$message.error("获取用户列表失败，请重试");
+          this.listLoading = false;
+        });
     },
-    created() {
-      this.getList();
-      this.getAllRoleList();
-    },
-    filters: {
-      formatDateTime(time) {
-        if (time == null || time === '') {
-          return 'N/A';
-        }
-        let date = new Date(time);
-        return formatDate(date, 'yyyy-MM-dd hh:mm:ss')
-      }
-    },
-    methods: {
-      handleResetSearch() {
-        this.listQuery = Object.assign({}, defaultListQuery);
-      },
-      handleSearchList() {
-        this.listQuery.pageNum = 1;
-        this.getList();
-      },
-      handleSizeChange(val) {
-        this.listQuery.pageNum = 1;
-        this.listQuery.pageSize = val;
-        this.getList();
-      },
-      handleCurrentChange(val) {
-        this.listQuery.pageNum = val;
-        this.getList();
-      },
-      handleAdd() {
-        this.dialogVisible = true;
-        this.isEdit = false;
-        this.admin = Object.assign({},defaultAdmin);
-      },
-      handleStatusChange(index, row) {
-        this.$confirm('是否要修改该状态?', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }).then(() => {
-          updateStatus(row.id, {status: row.status}).then(response => {
-            this.$message({
-              type: 'success',
-              message: '修改成功!'
+
+    // 修改状态（启用 / 禁用）
+    handleStatusChange(index, row) {
+      const isEnable = row.flag === "1" || row.flag === 1; // 判断是否是启用操作
+      const action = isEnable ? "启用" : "禁用"; // 操作类型
+      const apiFunction = isEnable ? ableUsers : disableUsers; // 选择对应的 API 方法
+
+      this.$confirm(`是否要${action}该用户？`, "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      })
+        .then(() => {
+          apiFunction({ userId: row.userId }) // 调用对应的 API
+            .then(() => {
+              this.$message({
+                type: "success",
+                message: `${action}用户成功!`,
+              });
+              this.getList(); // 刷新用户列表
+            })
+            .catch(() => {
+              this.$message({
+                type: "error",
+                message: `${action}用户失败，请重试!`,
+              });
+              this.getList();
             });
-          });
-        }).catch(() => {
+        })
+        .catch(() => {
           this.$message({
-            type: 'info',
-            message: '取消修改'
+            type: "info",
+            message: "取消修改",
           });
           this.getList();
         });
-      },
-      handleDelete(index, row) {
-        this.$confirm('是否要删除该用户?', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }).then(() => {
-          deleteAdmin(row.id).then(response => {
-            this.$message({
-              type: 'success',
-              message: '删除成功!'
-            });
-            this.getList();
-          });
-        });
-      },
-      handleUpdate(index, row) {
-        this.dialogVisible = true;
-        this.isEdit = true;
-        this.admin = Object.assign({},row);
-      },
-      handleDialogConfirm() {
-        this.$confirm('是否要确认?', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }).then(() => {
-          if (this.isEdit) {
-            updateAdmin(this.admin.id,this.admin).then(response => {
-              this.$message({
-                message: '修改成功！',
-                type: 'success'
-              });
-              this.dialogVisible =false;
-              this.getList();
-            })
-          } else {
-            createAdmin(this.admin).then(response => {
-              this.$message({
-                message: '添加成功！',
-                type: 'success'
-              });
-              this.dialogVisible =false;
-              this.getList();
-            })
-          }
-        })
-      },
-      handleAllocDialogConfirm(){
-        this.$confirm('是否要确认?', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }).then(() => {
-          let params = new URLSearchParams();
-          params.append("adminId", this.allocAdminId);
-          params.append("roleIds", this.allocRoleIds);
-          allocRole(params).then(response => {
-            this.$message({
-              message: '分配成功！',
-              type: 'success'
-            });
-            this.allocDialogVisible = false;
-          })
-        })
-      },
-      handleSelectRole(index,row){
-        this.allocAdminId = row.id;
-        this.allocDialogVisible = true;
-        this.getRoleListByAdmin(row.id);
-      },
-      getList() {
-        this.listLoading = true;
-        fetchList(this.listQuery).then(response => {
-          this.listLoading = false;
-          this.list = response.data.list;
-          this.total = response.data.total;
-        });
-      },
-      getAllRoleList() {
-        fetchAllRoleList().then(response => {
-          this.allRoleList = response.data;
-        });
-      },
-      getRoleListByAdmin(adminId) {
-        getRoleByAdmin(adminId).then(response => {
-          let allocRoleList = response.data;
-          this.allocRoleIds=[];
-          if(allocRoleList!=null&&allocRoleList.length>0){
-            for(let i=0;i<allocRoleList.length;i++){
-              this.allocRoleIds.push(allocRoleList[i].id);
-            }
-          }
-        });
+    },
+
+    // 判断是否为有效的 JSON 字符串
+    isJson(str) {
+      try {
+        JSON.parse(str);
+        return true;
+      } catch (e) {
+        return false;
       }
-    }
-  }
+    },
+
+    // 解析 JSON 字符串
+    parseJson(str) {
+      try {
+        return JSON.parse(str);
+      } catch (e) {
+        return null;
+      }
+    },
+
+    // 格式化键名，使显示更加友好
+    formatKey(key) {
+      const format = {
+        email: "邮箱",
+        country: "国家",
+        province: "省份",
+        city: "城市",
+        postcode: "邮政编码",
+        apartment: "公寓",
+        firstName: "名",
+        lastName: "姓",
+        phone: "电话",
+      };
+      return format[key] || key;
+    },
+
+    // 查询搜索
+    handleSearchList() {
+      this.form.pageNum = 1;
+
+      this.getList();
+      this.paginationVisible = false;
+    },
+
+    // 重置搜索
+    handleResetSearch() {
+      this.form = {
+        userName: "",
+        pageNum: 1, // 页码
+        pageSize: 10, // 每页条数
+      };
+      this.paginationVisible = true;
+      this.getList();
+    },
+
+    handleSizeChange(val) {
+      this.form.pageNum = 1;
+      this.form.pageSize = val;
+      this.getList();
+    },
+    handleCurrentChange(val) {
+      this.form.pageNum = val;
+      this.getList();
+    },
+  },
+};
 </script>
 <style></style>
 
