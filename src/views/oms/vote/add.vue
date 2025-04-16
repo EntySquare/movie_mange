@@ -3,15 +3,14 @@
     <el-card v-loading="loading">
       <h2>插入池子</h2>
       <el-form ref="FormRef" :model="Form" :rules="rules" label-width="105px">
-      
         <el-form-item label="标题" prop="title">
-          <el-input v-model.trim="Form.title"  placeholder="输入标题"/>
+          <el-input v-model.trim="Form.title" placeholder="输入标题" />
         </el-form-item>
         <el-form-item label="角色名A" prop="roleOne">
           <el-input v-model.trim="Form.roleOne" placeholder="输入角色名A" />
         </el-form-item>
         <el-form-item label="角色名B" prop="roleTwo">
-          <el-input v-model.trim="Form.roleTwo"  placeholder="输入角色名B"/>
+          <el-input v-model.trim="Form.roleTwo" placeholder="输入角色名B" />
         </el-form-item>
         <el-form-item label="时间" prop="duration">
           <el-date-picker
@@ -26,7 +25,11 @@
           />
         </el-form-item>
         <el-form-item label="初始底池金额" prop="initAmount">
-          <el-input v-model.trim="Form.initAmount" type="number"  placeholder="输入初始底池金额"/>
+          <el-input
+            v-model.trim="Form.initAmount"
+            type="number"
+            placeholder="输入初始底池金额（U）"
+          />
         </el-form-item>
       </el-form>
 
@@ -135,10 +138,10 @@ export default {
           roleOne: this.Form.roleOne,
           roleTwo: this.Form.roleTwo,
           duration: duration,
-          initAmount: this.Form.initAmount,
+          initAmount: (Number(this.Form.initAmount) * 10 ** 18).toString(),
         })
           .then(() => {
-            this.$message.success("商品添加成功");
+            this.$message.success("池子创建成功");
             this.$refs.FormRef.resetFields(); // 清空表单、
             //跳转到列表页面
             this.$router.push({ path: "/vote" });
