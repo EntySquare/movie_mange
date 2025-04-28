@@ -160,9 +160,11 @@ export default {
 
 <style scoped>
 .add-goods {
-  max-width: 600px;
-  margin: 20px auto;
+  max-width: 700px;
+  margin: 60px auto;
+  padding: 20px 20px;
 }
+
 .btn-group {
   display: flex;
   justify-content: space-between;

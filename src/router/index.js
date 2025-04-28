@@ -101,6 +101,28 @@ export const asyncRouterMap = [
 
     ]
   },
+  {
+    path: '',
+    component: Layout,
+    redirect: '/nft',
+    name: 'nft',
+    meta: { title: 'NFT', icon: 'nft-icon' },
+    children: [
+      // {
+      //   path: 'nft',
+      //   name: 'nftList',
+      //   component: () => import('@/views/oms/nft/index'),
+      //   meta: { title: 'NFT列表', icon: 'nft-icon' }
+      // },
+      {
+        path: 'nft/addNft',
+        name: 'addNft',
+        component: () => import('@/views/oms/nft/add'),
+        meta: { title: '插入NFT池子', icon: 'product-add' }
+      },
+
+    ]
+  },
   { path: '*', redirect: '/404', hidden: true }
 ]
 

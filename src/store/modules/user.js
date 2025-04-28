@@ -170,6 +170,39 @@ const user = {
               "icon": "product-add",
               "hidden": 0
             },
+            {
+              "id": 26,
+              "parentId": 0,
+              "createTime": "2020-02-07T08:29:51.000+00:00",
+              "title": "NFT",
+              "level": 0,
+              "sort": 0,
+              "name": "nft",
+              "icon": "nft-icon",
+              "hidden": 0
+            },
+            {
+              "id": 27,
+              "parentId": 26,
+              "createTime": "2020-02-07T08:29:51.000+00:00",
+              "title": "NFT列表",
+              "level": 1,
+              "sort": 0,
+              "name": "nftList",
+              "icon": "nft-icon",
+              "hidden": 0
+            },
+            {
+              "id": 28,
+              "parentId": 26,
+              "createTime": "2020-02-02T06:52:44.000+00:00",
+              "title": "插入NFT池子",
+              "level": 1,
+              "sort": 0,
+              "name": "addNft",
+              "icon": "product-add",
+              "hidden": 0
+            },
 
           ],
           "username": "admin"

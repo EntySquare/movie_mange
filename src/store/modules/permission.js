@@ -1,11 +1,21 @@
 import { asyncRouterMap, constantRouterMap } from '@/router/index';
-
+const forbiddenRoutesForAll = [
+  '/product/addProduct',
+  '/ums/admin',
+  '/vote/addVote',
+  '/nft/addNft'
+];
+import store from '../index';
 //判断是否有权限访问该菜单
 function hasPermission(menus, route) {
-  if (route.name) {
+  if (route.path) {
+    const authority = localStorage.getItem('authority') || store.getters.authority;
+    if (authority !== 'all' && forbiddenRoutesForAll.includes('/' + route.path)) {
+      return false; // 注意要补一个 '/'，因为 route.path 是不带 /
+    }
+
     let currMenu = getMenu(route.name, menus);
     if (currMenu != null) {
-      //设置菜单的标题、图标和可见性
       if (currMenu.title != null && currMenu.title !== '') {
         route.meta.title = currMenu.title;
       }
@@ -29,7 +39,7 @@ function hasPermission(menus, route) {
       }
     }
   } else {
-    return true
+    return true;
   }
 }
 
@@ -81,22 +91,22 @@ const permission = {
         // const { menus } = data;
         // const { username } = data;
         const accessedRouters = asyncRouterMap.filter(v => {
-          const menus = data.menusList;
+          const menus = data.menus;
           //admin帐号直接返回所有菜单
           // if(username==='admin') return true;
-          // if (hasPermission(menus, v)) {
-          //   if (v.children && v.children.length > 0) {
-          //     v.children = v.children.filter(child => {
-          //       if (hasPermission(menus, child)) {
-          //         return child
-          //       }
-          //       return false;
-          //     });
-          //     return v
-          //   } else {
-          //     return v
-          //   }
-          // }
+          if (hasPermission(menus, v)) {
+            if (v.children && v.children.length > 0) {
+              v.children = v.children.filter(child => {
+                if (hasPermission(menus, child)) {
+                  return child
+                }
+                return false;
+              });
+              return v
+            } else {
+              return v
+            }
+          }
           return true;
         });
         //对菜单进行排序

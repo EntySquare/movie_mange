@@ -1,7 +1,6 @@
 import axios from 'axios'
 import { Message, MessageBox } from 'element-ui'
 import store from '../store'
-import { getToken } from '@/utils/auth'
 
 // 创建axios实例
 const service = axios.create({
@@ -12,13 +11,11 @@ const service = axios.create({
 // request拦截器
 service.interceptors.request.use(config => {
   if (store.getters.token) {
-    // config.headers['Authorization'] = getToken() // 让每个请求携带自定义token 请根据实际情况自行修改
+    // config.headers['Authorization'] = getToken() // 让每个请求携带自定义token
     const token = store.getters.token
     const authority = store.getters.authority // 从store中获取authority
 
     console.log('tokenauthority', token, authority);
-
-    http://192.168.31.146:3006/admin/shop/getGoodsList
 
     config.headers['admintoken'] = token// adminToken
     // config.headers['authority'] = authority // authority
