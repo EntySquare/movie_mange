@@ -20,9 +20,31 @@
         <el-form-item label="库存" prop="stock">
           <el-input v-model.trim="productForm.stock" type="number" />
         </el-form-item>
-        <el-form-item label="图片" prop="image">
+        <!-- <el-form-item label="图片" prop="image">
           <el-input v-model.trim="productForm.image" />
-        </el-form-item>
+        </el-form-item> -->
+        <el-form-item label="图片" prop="image">
+      <el-upload
+        ref="upload"
+        class="upload-demo"
+        action="https://example.com/upload"
+        :limit="1"
+        :file-list="fileList"
+        :auto-upload="false"
+        :show-file-list="true"
+        list-type="picture-card"
+        :on-preview="handlePreview"
+        :on-success="handleUploadSuccess"
+        :on-remove="handleRemove"
+        :on-exceed="handleExceed"
+        :before-upload="beforeUpload"
+      >
+      <i v-if="fileList.length === 0" class="el-icon-plus" />
+      </el-upload>
+
+      <!-- 用于隐藏绑定上传地址到表单 -->
+      <input type="hidden" v-model="productForm.image" />
+    </el-form-item>
         <el-form-item label="描述" prop="describe">
           <el-input type="textarea" v-model.trim="productForm.describe" />
         </el-form-item>
@@ -67,6 +89,8 @@ export default {
           { required: true, message: "请输入描述", trigger: "change" },
         ],
       },
+      // 上传文件列表
+      fileList: [],
     };
   },
   methods: {
@@ -98,6 +122,43 @@ export default {
             this.loading = false;
           });
       });
+    },
+
+    // 上传前校验类型
+    beforeUpload(file) {
+      const isImage = file.type.startsWith("image/");
+      if (!isImage) {
+        this.$message.error("只能上传图片文件！");
+      }
+      return isImage;
+    },
+    // 上传成功
+    handleUploadSuccess(response, file, fileList) {
+    // 模拟返回地址，建议根据你后端返回内容修改
+    const imageUrl = (file.response && file.response.url) || file.url || "https://example.com/demo.jpg";
+    this.productForm.image = imageUrl;
+    this.fileList = [{ name: file.name, url: imageUrl }];
+    this.$message.success("上传成功");
+},
+    // 删除图片
+    handleRemove() {
+      this.productForm.image = "";
+      this.fileList = [];
+    },
+    // 点击图片预览（可选）
+    handlePreview(file) {
+      this.$alert(`<img src="${file.url}" style="width: 100%;" />`, "图片预览", {
+        dangerouslyUseHTMLString: true,
+      });
+    },
+
+    handleExceed(files) {
+      const file = files[0];
+      // 清除旧文件
+      this.$refs.upload.clearFiles();
+      // 生成唯一 ID 并手动添加文件
+      file.uid = Date.now() + '_' + Math.random(); // 简化版 genFileId
+      this.$refs.upload.handleStart(file);
     },
   },
 };
