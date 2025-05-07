@@ -23,8 +23,8 @@
         <!-- <el-form-item label="图片" prop="image">
           <el-input v-model.trim="productForm.image" />
         </el-form-item> -->
-        <el-form-item label="图片" prop="image">
-      <el-upload
+        <el-form-item label="主图" prop="image">
+        <el-upload
         ref="upload"
         class="upload-demo"
         action="https://example.com/upload"
@@ -37,17 +37,38 @@
         :on-success="handleUploadSuccess"
         :on-remove="handleRemove"
         :on-exceed="handleExceed"
-        :before-upload="beforeUpload"
+        :before-upload="(file) => { productForm.image = file; return false; }"
       >
       <i v-if="fileList.length === 0" class="el-icon-plus" />
-      </el-upload>
-
-      <!-- 用于隐藏绑定上传地址到表单 -->
-      <input type="hidden" v-model="productForm.image" />
-    </el-form-item>
-        <el-form-item label="描述" prop="describe">
-          <el-input type="textarea" v-model.trim="productForm.describe" />
+        </el-upload>
+        <!-- 用于隐藏绑定上传地址到表单 -->
+        <input type="hidden" v-model="productForm.image" />
         </el-form-item>
+
+        <el-form-item label="封面图" prop="image">
+          <el-upload
+        ref="upload"
+        class="upload-demo"
+        action="https://example.com/upload"
+        :limit="1"
+        :file-list="fileList"
+        :auto-upload="false"
+        :show-file-list="true"
+        list-type="picture-card"
+        :on-preview="handlePreview"
+        :on-success="handleUploadSuccess"
+        :on-remove="handleRemove"
+        :on-exceed="handleExceed"
+        :before-upload="(file) => { productForm.cover = file; return false; }"
+      >
+      <i v-if="fileList.length === 0" class="el-icon-plus" />
+          </el-upload>
+          <!-- 用于隐藏绑定上传地址到表单 -->
+          <input type="hidden" v-model="productForm.cover" />
+
+          <el-input type="textarea" v-model.trim="productForm.describe" style="margin-top: 20px;"/>
+        </el-form-item>
+        
       </el-form>
 
       <div class="btn-group">
@@ -74,7 +95,8 @@ export default {
         name: "",
         price: null,
         stock: null,
-        image: "",
+        image: null, //File 类型
+        cover: null, //File 类型
         describe: "",
       },
       rules: {
@@ -83,7 +105,10 @@ export default {
         price: [{ required: true, message: "请输入价格", trigger: "change" }],
         stock: [{ required: true, message: "请输入库存", trigger: "change" }],
         image: [
-          { required: true, message: "请输入图片地址", trigger: "change" },
+          { required: true, message: "请上传主图", trigger: "change" },
+        ],
+        cover: [
+          { required: true, message: "请上传封面图", trigger: "change" },
         ],
         describe: [
           { required: true, message: "请输入描述", trigger: "change" },
@@ -134,12 +159,14 @@ export default {
     },
     // 上传成功
     handleUploadSuccess(response, file, fileList) {
-    // 模拟返回地址，建议根据你后端返回内容修改
-    const imageUrl = (file.response && file.response.url) || file.url || "https://example.com/demo.jpg";
-    this.productForm.image = imageUrl;
-    this.fileList = [{ name: file.name, url: imageUrl }];
-    this.$message.success("上传成功");
-},
+      // 模拟返回地址，建议根据你后端返回内容修改
+      //const imageUrl = (file.response && file.response.url) || file.url || "https://example.com/demo.jpg";
+      const imageName = 'image_' + Date.now() + '_' + Math.random().toString(36).substring(2, 10);
+      console.log("图片名：", imageName);
+      this.productForm.image = imageName;
+      this.fileList = [{ name: file.name, url: imageName }];
+      this.$message.success("上传成功");
+    },
     // 删除图片
     handleRemove() {
       this.productForm.image = "";
