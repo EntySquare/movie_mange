@@ -77,8 +77,8 @@
 
         </el-form-item>
 
-        <el-form-item label="封面图" prop="describe">
-          <el-input type="textarea" v-model.trim="productForm.describe" style="margin-top: 20px;"/>
+        <el-form-item label="描述" prop="describe">
+          <el-input type="textarea" v-model.trim="productForm.describe" style="margin-top: 0px;"/>
         </el-form-item>
         
       </el-form>
@@ -171,7 +171,7 @@ export default {
             this.$message.success("商品添加成功");
             this.$refs.productFormRef.resetFields(); // 清空表单、
             //跳转到商品列表页面
-            this.$router.push({ path: "/pms/product" });
+            //this.$router.push({ path: "/pms/product" });
           })
           .catch(() => {
             this.$message.error("添加失败，请稍后重试");
