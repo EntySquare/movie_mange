@@ -24,48 +24,60 @@
           <el-input v-model.trim="productForm.image" />
         </el-form-item> -->
         <el-form-item label="主图" prop="image">
-        <el-upload
-        ref="upload"
-        class="upload-demo"
-        action="https://example.com/upload"
-        :limit="1"
-        :file-list="fileList"
-        :auto-upload="false"
-        :show-file-list="true"
-        list-type="picture-card"
-        :on-preview="handlePreview"
-        :on-success="handleUploadSuccess"
-        :on-remove="handleRemove"
-        :on-exceed="handleExceed"
-        :before-upload="(file) => { productForm.image = file; return false; }"
-      >
-      <i v-if="fileList.length === 0" class="el-icon-plus" />
-        </el-upload>
-        <!-- 用于隐藏绑定上传地址到表单 -->
-        <input type="hidden" v-model="productForm.image" />
+          <el-upload
+          ref="upload-image"
+          class="upload-image"
+          action=""
+          :limit="1"
+          :file-list="imageList"
+          :auto-upload="false"
+          :show-file-list="true"
+          list-type="picture-card"
+          :on-preview="handlePreview"
+          :on-change="imageOnChange"
+          :on-remove="handleRemove"
+          :on-exceed="handleExceed"
+          :before-upload="(file) => { 
+            productForm.image = file;
+            imageList = [file];
+            console.log('file:', file);
+            //return false;  
+          }"
+        >
+        <i v-if="imageList.length === 0" class="el-icon-plus" />
+          </el-upload>
+          <!-- 用于隐藏绑定上传地址到表单 -->
+          <input type="hidden" v-model="productForm.image" />
         </el-form-item>
 
-        <el-form-item label="封面图" prop="image">
+        <el-form-item label="封面图" prop="cover">
           <el-upload
-        ref="upload"
-        class="upload-demo"
-        action="https://example.com/upload"
+        ref="upload-cover"
+        class="upload-cover"
+        action=""
         :limit="1"
-        :file-list="fileList"
+        :file-list="coverList"
         :auto-upload="false"
         :show-file-list="true"
         list-type="picture-card"
         :on-preview="handlePreview"
-        :on-success="handleUploadSuccess"
+        :on-change="coverOnChange"
         :on-remove="handleRemove"
         :on-exceed="handleExceed"
-        :before-upload="(file) => { productForm.cover = file; return false; }"
+        :before-upload="(file) => { 
+          productForm.cover = file;
+          coverList = [file];
+          //return false;  
+        }"
       >
-      <i v-if="fileList.length === 0" class="el-icon-plus" />
+      <i v-if="coverList.length === 0" class="el-icon-plus" />
           </el-upload>
           <!-- 用于隐藏绑定上传地址到表单 -->
           <input type="hidden" v-model="productForm.cover" />
 
+        </el-form-item>
+
+        <el-form-item label="封面图" prop="describe">
           <el-input type="textarea" v-model.trim="productForm.describe" style="margin-top: 20px;"/>
         </el-form-item>
         
@@ -115,10 +127,21 @@ export default {
         ],
       },
       // 上传文件列表
-      fileList: [],
+      imageList: [],
+      coverList: [],
     };
   },
   methods: {
+    imageOnChange(file) {
+      this.productForm.image = file;
+      this.imageList = [file];
+      //console.log("file:", this.productForm.image);
+    },
+    coverOnChange(file) {
+      this.productForm.cover = file;
+      this.coverList = [file];
+      //console.log("file:", file);
+    },
     submitProduct() {
       if (this.authority !== "all") {
         this.$message.error("无权限操作");
@@ -131,9 +154,19 @@ export default {
         }
 
         this.loading = true;
-        this.productForm.price = parseFloat(this.productForm.price);
-        this.productForm.stock = parseInt(this.productForm.stock);
-        insertNewGoods(this.productForm)
+        //this.productForm.price = parseFloat(this.productForm.price);
+        //this.productForm.stock = parseInt(this.productForm.stock);
+
+
+        insertNewGoods({
+            imageFile: this.productForm.image,   // 这是 File 类型
+            coverFile: this.productForm.cover,   // 这是 File 类型
+            title: this.productForm.title,
+            name: this.productForm.name,
+            price: this.productForm.price,
+            stock: this.productForm.stock,
+            describe: this.productForm.describe
+          })
           .then(() => {
             this.$message.success("商品添加成功");
             this.$refs.productFormRef.resetFields(); // 清空表单、
@@ -157,20 +190,10 @@ export default {
       }
       return isImage;
     },
-    // 上传成功
-    handleUploadSuccess(response, file, fileList) {
-      // 模拟返回地址，建议根据你后端返回内容修改
-      //const imageUrl = (file.response && file.response.url) || file.url || "https://example.com/demo.jpg";
-      const imageName = 'image_' + Date.now() + '_' + Math.random().toString(36).substring(2, 10);
-      console.log("图片名：", imageName);
-      this.productForm.image = imageName;
-      this.fileList = [{ name: file.name, url: imageName }];
-      this.$message.success("上传成功");
-    },
     // 删除图片
     handleRemove() {
       this.productForm.image = "";
-      this.fileList = [];
+      this.imageList = [];
     },
     // 点击图片预览（可选）
     handlePreview(file) {

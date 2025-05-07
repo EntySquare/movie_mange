@@ -10,18 +10,51 @@ export function fetchList(data) {
 import store from '../store'
 const authority = store.getters.authority // 从store中获取authority
 
-// /shop/insertNewGoods-添加最新商品
 
-export function insertNewGoods(data) {
+/**
+ * 上传图片接口封装
+ * @param {File} file - 要上传的图片文件
+ * @returns {Promise} - 返回图片上传后的服务器响应
+ */
+export function insertNewGoods({ imageFile, coverFile, ...extraData }) {
+  const formData = new FormData();
+
+  console.log('当前 image:', imageFile);
+  console.log('是否是 File 实例:', imageFile instanceof File);
+
+  if (imageFile) formData.append('image', imageFile);
+  if (coverFile) formData.append('cover', coverFile);
+
+  for (const key in extraData) {
+    if (extraData[key] != null) {
+      formData.append(key, extraData[key]);
+    }
+  }
+
   return request({
     url: '/admin/shop/insertNewGoods',
     method: 'post',
-    data: data,
+    data: formData,
     headers: {
-      authority: authority // 替换成实际的 authority 值
+      'Content-Type': 'multipart/form-data',
+      authority: store.getters.authority
     }
-  })
+  });
 }
+
+
+// /shop/insertNewGoods-添加最新商品
+
+// export function insertNewGoodsOld(data) {
+//   return request({
+//     url: '/admin/shop/insertNewGoods',
+//     method: 'post',
+//     data: data,
+//     headers: {
+//       authority: authority // 替换成实际的 authority 值
+//     }
+//   })
+// }
 
 // /shop/disableGoods-下架商品
 export function disableGoods(data) {
