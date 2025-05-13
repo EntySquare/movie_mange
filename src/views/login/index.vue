@@ -9,12 +9,13 @@
         label-position="left"
       >
         <div style="text-align: center">
-          <svg-icon
-            icon-class="login-mall"
-            style="width: 56px; height: 56px; color: #409eff"
-          ></svg-icon>
+          <img
+            src="@/assets/images/login_mall.png"
+            alt="login mall"
+            style="width: 60px; height: 60px"
+          />
         </div>
-        <h2 class="login-title color-main">mall-admin-web</h2>
+        <h2 class="login-title color-main">MAI verse后台管理系统</h2>
         <el-form-item prop="username">
           <el-input
             name="username"

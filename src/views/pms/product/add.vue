@@ -20,9 +20,28 @@
         <el-form-item label="库存" prop="stock">
           <el-input v-model.trim="productForm.stock" type="number" />
         </el-form-item>
-        <!-- <el-form-item label="图片" prop="image">
-          <el-input v-model.trim="productForm.image" />
-        </el-form-item> -->
+        <el-form-item label="新品" prop="new">
+          <el-select v-model="productForm.new" placeholder="请选择">
+            <el-option
+              v-for="item in options_new"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value">
+            </el-option>
+          </el-select>
+        </el-form-item>
+
+        <el-form-item label="热门" prop="hot">
+          <el-select v-model="productForm.hot" placeholder="请选择">
+            <el-option
+              v-for="item in options_hot"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value">
+            </el-option>
+          </el-select>
+        </el-form-item>
+
         <el-form-item label="主图" prop="image">
           <el-upload
           ref="upload-image"
@@ -35,11 +54,12 @@
           list-type="picture-card"
           :on-preview="handlePreview"
           :on-change="imageOnChange"
-          :on-remove="handleRemove"
+          :on-remove="handleImageRemove"
+          :on-success="handleUploadSuccess"
           :on-exceed="handleExceed"
           :before-upload="(file) => { 
             productForm.image = file;
-            imageList = [file];
+            this.imageList = [file];
             console.log('file:', file);
             //return false;  
           }"
@@ -62,7 +82,8 @@
         list-type="picture-card"
         :on-preview="handlePreview"
         :on-change="coverOnChange"
-        :on-remove="handleRemove"
+        :on-success="handleUploadSuccess"
+        :on-remove="handleCoverRemove"
         :on-exceed="handleExceed"
         :before-upload="(file) => { 
           productForm.cover = file;
@@ -107,6 +128,8 @@ export default {
         name: "",
         price: null,
         stock: null,
+        new: "默认",
+        hot: "默认",
         image: null, //File 类型
         cover: null, //File 类型
         describe: "",
@@ -116,6 +139,8 @@ export default {
         name: [{ required: true, message: "请输入名称", trigger: "change" }],
         price: [{ required: true, message: "请输入价格", trigger: "change" }],
         stock: [{ required: true, message: "请输入库存", trigger: "change" }],
+        new: [{ required: false, message: "请选择新品分类", trigger: "change" }],
+        hot: [{ required: false, message: "请选择热门分类", trigger: "change" }],
         image: [
           { required: true, message: "请上传主图", trigger: "change" },
         ],
@@ -123,12 +148,28 @@ export default {
           { required: true, message: "请上传封面图", trigger: "change" },
         ],
         describe: [
-          { required: true, message: "请输入描述", trigger: "change" },
+          { required: false, message: "请输入描述", trigger: "change" },
         ],
       },
       // 上传文件列表
       imageList: [],
       coverList: [],
+
+      options_new: [{
+          value: '0',
+          label: '默认'
+        }, {
+          value: '1',
+          label: '新品'
+      }],
+
+      options_hot: [{
+          value: '0',
+          label: '默认'
+        }, {
+          value: '1',
+          label: '热门'
+      }],
     };
   },
   methods: {
@@ -142,6 +183,17 @@ export default {
       this.coverList = [file];
       //console.log("file:", file);
     },
+     // 上传成功
+    handleUploadSuccess(response, file, fileList) {
+    // 模拟返回地址，建议根据你后端返回内容修改
+      //const imageUrl = (file.response && file.response.url) || file.url || "https://example.com/demo.jpg";
+      //const imageName = 'image_' + Date.now() + '_' + Math.random().toString(36).substring(2, 10);
+      //console.log("图片名：", imageName);
+      //this.productForm.image = imageName;
+      //this.fileList = [{ name: file.name, url: imageName }];
+      //this.$message.success("上传成功");
+    },
+
     submitProduct() {
       if (this.authority !== "all") {
         this.$message.error("无权限操作");
@@ -149,7 +201,7 @@ export default {
       }
       this.$refs.productFormRef.validate((valid) => {
         if (!valid) {
-          this.$message.error("请填写完整信息");
+          //this.$message.error("请填写完整信息");
           return;
         }
 
@@ -165,11 +217,15 @@ export default {
             name: this.productForm.name,
             price: this.productForm.price,
             stock: this.productForm.stock,
+            new: this.productForm.new,
+            hot: this.productForm.hot,
             describe: this.productForm.describe
           })
           .then(() => {
             this.$message.success("商品添加成功");
             this.$refs.productFormRef.resetFields(); // 清空表单、
+            this.handleImageRemove()
+            this.handleCoverRemove()
             //跳转到商品列表页面
             //this.$router.push({ path: "/pms/product" });
           })
@@ -191,9 +247,14 @@ export default {
       return isImage;
     },
     // 删除图片
-    handleRemove() {
+    handleImageRemove() {
       this.productForm.image = "";
       this.imageList = [];
+    },
+    // 删除图片
+    handleCoverRemove() {
+      this.productForm.cover = "";
+      this.coverList = [];
     },
     // 点击图片预览（可选）
     handlePreview(file) {
