@@ -57,12 +57,6 @@
           :on-remove="handleImageRemove"
           :on-success="handleUploadSuccess"
           :on-exceed="handleExceed"
-          :before-upload="(file) => { 
-            productForm.image = file;
-            this.imageList = [file];
-            console.log('file:', file);
-            //return false;  
-          }"
         >
         <i v-if="imageList.length === 0" class="el-icon-plus" />
           </el-upload>
@@ -128,8 +122,8 @@ export default {
         name: "",
         price: null,
         stock: null,
-        new: "默认",
-        hot: "默认",
+        new: "0",
+        hot: "0",
         image: null, //File 类型
         cover: null, //File 类型
         describe: "",
@@ -174,14 +168,19 @@ export default {
   },
   methods: {
     imageOnChange(file) {
-      this.productForm.image = file;
+      // 获取原始文件
+      const rawFile = file.raw;
+      this.productForm.image = rawFile;
       this.imageList = [file];
-      //console.log("file:", this.productForm.image);
+      //console.log("image----file:", this.productForm.image);
+      //console.log('是否是 File 实例:', this.productForm.image instanceof File);
     },
     coverOnChange(file) {
-      this.productForm.cover = file;
+      // 获取原始文件
+      const rawFile = file.raw;
+      this.productForm.cover = rawFile;
       this.coverList = [file];
-      //console.log("file:", file);
+      console.log("cover---file:", this.productForm.cover);
     },
      // 上传成功
     handleUploadSuccess(response, file, fileList) {
@@ -204,12 +203,7 @@ export default {
           //this.$message.error("请填写完整信息");
           return;
         }
-
         this.loading = true;
-        //this.productForm.price = parseFloat(this.productForm.price);
-        //this.productForm.stock = parseInt(this.productForm.stock);
-
-
         insertNewGoods({
             imageFile: this.productForm.image,   // 这是 File 类型
             coverFile: this.productForm.cover,   // 这是 File 类型
