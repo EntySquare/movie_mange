@@ -114,6 +114,28 @@
             >
               {{ scope.row.status === 1 ? "点击下架" : "点击上架" }}
             </el-button>
+
+            <!-- 删除商品 -->
+             <el-button
+              v-if="authority === 'all'"
+              type="text"
+              style="color: red;"
+              :loading="loadingProductId === scope.row.id"
+              @click="confirmDeleteProduct(scope.row)"
+            >
+              {{ "删除商品" }}
+            </el-button>
+
+            <!-- 编辑商品 -->
+             <el-button
+              v-if="authority === 'all'"
+              type="text"
+              :loading="loadingProductId === scope.row.id"
+              @click="deleteProduct(scope.row)"
+            >
+              {{ "编辑商品" }}
+            </el-button>
+
           </template>
         </el-table-column>
       </el-table>
@@ -157,6 +179,7 @@ import {
   disableGoods,
   ableGoods,
   modifyGoodsPrice,
+  deleteGoods,
   modifyGoodsAmount,
 } from "@/api/product";
 import store from "@/store";
@@ -171,7 +194,7 @@ export default {
       TakeDownloading: false, // 按钮 loading 状态
       selectedProduct: null, // 当前选中的商品
       loadingProductId: null, // 当前操作的商品 ID
-
+      dialogAction: '', // 'toggleStatus' | 'deleteProduct' 等
       dialogTitle: "", // 对话框标题
       dialogMessage: "", // 对话框消息
       dialogVisible: false, // 控制对话框显示
@@ -211,9 +234,23 @@ export default {
       }
       this.selectedProduct = product;
       this.dialogVisible = true;
+      this.dialogAction = 'toggleStatus';
       this.dialogTitle = product.status === 1 ? "确认下架商品" : "确认上架商品";
       this.dialogMessage =
         product.status === 1 ? "确定要下架该商品吗？" : "确定要上架该商品吗？";
+    },
+
+    // 删除商品
+    confirmDeleteProduct(product) {
+      if (this.authority !== "all") {
+        this.$message.error("暂无删除权限，请联系管理员");
+        return;
+      }
+      this.selectedProduct = product;
+      this.dialogVisible = true;
+      this.dialogAction = 'deleteProduct';
+      this.dialogTitle = "删除商品";
+      this.dialogMessage = "确定要删除该商品吗？";
     },
 
     // 执行上架/下架操作
@@ -222,6 +259,7 @@ export default {
       this.TakeDownloading = true;
       this.loadingProductId = this.selectedProduct.id;
 
+      if (this.dialogAction === 'toggleStatus') {
       const apiCall =
         this.selectedProduct.status === 1 ? disableGoods : ableGoods;
       apiCall({ goodId: this.selectedProduct.id })
@@ -237,6 +275,32 @@ export default {
         })
         .catch(() => {
           this.$message.error("操作失败，请稍后重试");
+        })
+        .finally(() => {
+          this.TakeDownloading = false;
+        });
+      } else if (this.dialogAction === 'deleteProduct') {
+        console.log("Deleting product...");
+        this.deleteProduct();
+      }
+    },
+
+    // 执行商品删除操作
+    deleteProduct() {
+      if (!this.selectedProduct) return;
+      this.TakeDownloading = true;
+      this.loadingProductId = this.selectedProduct.id;
+
+      // 调用删除商品的 API
+      deleteGoods({ id: this.selectedProduct.id })
+        .then(() => {
+          this.$message.success("商品已删除");
+          this.loadingProductId = null;
+          this.getList();
+          this.dialogVisible = false;
+        })
+        .catch(() => {
+          this.$message.error("删除失败，请稍后重试");
         })
         .finally(() => {
           this.TakeDownloading = false;

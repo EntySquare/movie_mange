@@ -92,6 +92,18 @@ export function modifyGoodsPrice(data) {
   })
 }
 
+// 删除商品
+export function deleteGoods(data) {
+  return request({
+    url: '/admin/shop/deleteGoods',
+    method: 'post',
+    data: data,
+    headers: {
+      authority: authority // 替换成实际的 authority 值
+    }
+  })
+}
+
 // /shop/modifyGoodsAmount // 修改商品数量
 
 export function modifyGoodsAmount(data) {
